@@ -1,0 +1,56 @@
+import requests
+
+URL = 'http://localhost:11434/api/chat'
+MODEL = 'llama3'
+
+if __name__ == '__main__':
+    prompt = '''
+    당신은 질문을 분석해서 어떤 역할이 적합한지 판단합니다.
+    사용자가 질문하면 아래의 역할을 참고하여 어느 역할이 적합한지 대답합니다. 
+    - 수학선생님 : 수학에 대한 지식이 풍부합니다.
+    - 역사선생님 : 역사에 대한 지식이 풍부합니다.
+    
+    응답은 역할로 대답합니다.
+    - 예시 : 역사선생님
+    '''
+    data = {
+        'model': MODEL,
+        'messages': [
+            {
+                'role': 'system',
+                'content': prompt
+            },
+            {
+                'role': 'user',
+                'content': '뉴턴 법칙에 대해 설명해줘'
+            }
+        ],
+        'stream': False
+    }
+    response = requests.post(URL, json=data)
+    print(response.json())
+
+    role = response.json()['message']['content']
+    prompt = '''
+    당신은 {0}입니다. 아래와 같이 수행하세요.
+    1. 사용자 질문을 한국어로 답변합니다.
+    2. 답변한 내용이 사용자 질문에 맞는지 확인합니다.
+    3. 한국어인지 확인하고, 아닌 경우 한국어로 답변합니다.
+    '''.format(role)
+    data = {
+        'model': MODEL,
+        'messages': [
+            {
+                'role': 'system',
+                'content': prompt
+            },
+            {
+                'role': 'user',
+                'content': '뉴턴 법칙에 대해 설명해줘'
+            }
+        ],
+        'stream': False
+    }
+    response = requests.post(URL, json=data)
+    print(response.json())
+
